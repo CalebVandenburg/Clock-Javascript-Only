@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                background-color: black;
+                color: darkgreen;
+            }
+            h1 {
+                width: 100%;
+                text-align: center;
+                font-size: 6rem;
+            }
+            #clockContainer {
+                display:flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+            }
+            #clockContainer #time{
+                font-size: 5rem;
+                margin-top: 2rem;
+                padding: 1rem;
+                border: 1px solid green;
+                border-radius: 0.5rem;
+            }
+            #clockContainer #stopwatch{
+                font-size: 3rem;
+                margin-top: 1rem;
+                padding: 1rem;
+                border: 1px solid green;
+                border-radius: 0.5rem;
+            }
+            #clockContainer #timer{
+                margin-top: 1rem;
+                padding: 1rem;
+                font-size: 3rem;
+                border: 1px solid green;
+                border-radius: 0.5rem;
+            }
+            #clockContainer #stopwatch {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            #clockContainer #timer {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            #hourInput, #minuteInput, #secondInput {
+                width: 30px;
+                color: darkgreen;
+            }
+            #timerButtons {
+                font-size: 1rem;
+            }
+            legend {
+                font-size: 2rem;
+            }
+        </style>
+    </head>
+<body>
+
+<h1>Clock App</h1>
+<div id="clockContainer">
+    <fieldset id="time">
+        <legend>Time</legend>
+        <span id="hour"></span> : 
+        <span id="minute"></span> : 
+        <span id="second"></span>
+    </fieldset>
+    <fieldset id="stopwatch">
+        <legend>Stopwatch</legend>
+        <div id="stopwatchTime">
+            <span id="hour">00</span> : 
+            <span id="minute">00</span> : 
+            <span id="second">00</span>
+        </div>
+        <div id="stopwatchButtons">
+            <input type="button" value="Start/Stop" data-state="stopped" id="stopwatchStartStop">
+            <input type="button" value="Reset" onclick='StopWatchReset()' id="stopwatchReset">
+        </div>
+    </fieldset>
+    <fieldset id="timer">
+        <legend>Timer</legend>
+        <div id="timerTime">
+            <span id="hour">00</span> : 
+            <span id="minute">00</span> : 
+            <span id="second">00</span>
+        </div>
+        <div id="timerButtons">
+            hours: <input id="hourInput"  type="number" value="0"> 
+            minutes: <input id="minuteInput" type="number" value="0"> 
+            seconds: <input id="secondInput" type="number" value="0"> 
+            <input type="button" value="Start/Stop" data-state="reset" id="timerStartStop">
+            <input type="button" value="Reset" onclick='TimerReset()' id="timerReset">
+        </div>
+    </fieldset>
+</div>
+<script type="text/javascript">
+    function RunClock() {
+        
+        var timer = setTimeout(RunClock, 1000);
+        var time = new Date();
+        hour = MakeNumberLocale(time.getHours());
+        minute = MakeNumberLocale(time.getMinutes());
+        second = MakeNumberLocale(time.getSeconds());
+        var timeHour = document.querySelector('#time #hour');
+        var timeMinute = document.querySelector('#time #minute');
+        var timeSecond = document.querySelector('#time #second');
+        timeHour.innerHTML = hour;
+        timeMinute.innerHTML = minute;
+        timeSecond.innerHTML = second;
+    }
+    function RunStopWatch() {
+        var timer = setTimeout(RunStopWatch, 1000);
+        var stopwatchStartStop = document.querySelector('#stopwatch #stopwatchStartStop');
+        if(stopwatchStartStop.getAttribute("data-state") == "stopped") {
+            clearInterval(timer);
+        }
+        else {
+            var stopwatchHour = document.querySelector('#stopwatch #hour');
+            var stopwatchMinute = document.querySelector('#stopwatch #minute');
+            var stopwatchSecond = document.querySelector('#stopwatch #second');
+            var hour = parseInt(stopwatchHour.innerHTML);
+            var minute = parseInt(stopwatchMinute.innerHTML);
+            var second = parseInt(stopwatchSecond.innerHTML) + 1;
+            if(second >= 60) {
+                second = 0;
+                minute = minute + 1
+                if(minute >= 60) {
+                    minute = 0;
+                    hour = hour + 1;
+                    if(hour == 99) {
+                        StopWatchStartStop("started");
+                        clearInterval(timer);
+                    }
+                }
+            }
+            stopwatchHour.innerHTML = MakeNumberLocale(hour);
+            stopwatchMinute.innerHTML = MakeNumberLocale(minute);
+            stopwatchSecond.innerHTML = MakeNumberLocale(second);
+        }
+    }
+    function RunTimer() {
+        var timer = setTimeout(RunTimer, 1000);
+        var timerStartStop = document.querySelector('#timer #timerStartStop');
+        if(timerStartStop.getAttribute("data-state") == "stopped") {
+            clearInterval(timer);
+        }
+        else {
+            
+            var timerHour = document.querySelector('#timer #hour');
+            var timerMinute = document.querySelector('#timer #minute');
+            var timerSecond = document.querySelector('#timer #second');
+            var hour = parseInt(timerHour.innerHTML);
+            var minute = parseInt(timerMinute.innerHTML);
+            var second = parseInt(timerSecond.innerHTML) - 1;
+            if(second < 0) {
+                second = 59;
+                minute = minute - 1
+                if(minute < 0) {
+                    minute = 59;
+                    hour = hour - 1;
+                    if(hour < 0) {
+                        TimerStartStop("finished");
+                        timerHour.innerHTML = MakeNumberLocale(0);
+                        timerMinute.innerHTML = MakeNumberLocale(0);
+                        timerSecond.innerHTML = MakeNumberLocale(0);
+                        clearInterval(timer);
+                        return null;
+                    }
+                }
+            }
+            timerHour.innerHTML = MakeNumberLocale(hour);
+            timerMinute.innerHTML = MakeNumberLocale(minute);
+            timerSecond.innerHTML = MakeNumberLocale(second);
+        }
+    }
+    function StopWatchStartStop(state) {
+        var stopwatchStartStop = document.querySelector('#stopwatch #stopwatchStartStop');
+        if(state == "started") {
+            stopwatchStartStop.setAttribute("data-state","stopped");
+        }
+        else {
+            var stopwatchSecond = document.querySelector('#stopwatch #second');
+            stopwatchSecond.innerHTML = MakeNumberLocale(parseInt(stopwatchSecond.innerHTML)-1);
+            stopwatchStartStop.setAttribute("data-state","started");
+            RunStopWatch();
+        }
+    }
+    function TimerStartStop(state) {
+        var timerStartStop = document.querySelector('#timer #timerStartStop');
+        if(state == "started") {
+            timerStartStop.setAttribute("data-state","stopped");
+        }
+        else if(state == "stopped") {
+            timerStartStop.setAttribute("data-state","started");
+            var timerSecond = document.querySelector('#timer #second');
+            timerSecond.innerHTML = MakeNumberLocale(parseInt(timerSecond.innerHTML) + 1);
+            RunTimer();
+        }
+        else if(state == "finished") {
+            TimerReset();
+        }
+        else {
+            timerStartStop.setAttribute("data-state","started");
+            var timerHour = document.querySelector('#timer #hour');
+            var timerMinute = document.querySelector('#timer #minute');
+            var timerSecond = document.querySelector('#timer #second');
+            var timerHourInput = document.querySelector('#timer #hourInput');
+            var timerMinuteInput = document.querySelector('#timer  #minuteInput');
+            var timerSecondInput = document.querySelector('#timer #secondInput');
+            timerHour.innerHTML = MakeNumberLocale(timerHourInput.value);
+            timerMinute.innerHTML = MakeNumberLocale(timerMinuteInput.value);
+            timerSecond.innerHTML = MakeNumberLocale(parseInt(timerSecondInput.value) + 1);
+            RunTimer();
+        }
+    }
+    function StopWatchReset() {
+        var stopwatchHour = document.querySelector('#stopwatch #hour');
+        var stopwatchMinute = document.querySelector('#stopwatch #minute');
+        var stopwatchSecond = document.querySelector('#stopwatch #second');
+        stopwatchHour.innerHTML = MakeNumberLocale(0);
+        stopwatchMinute.innerHTML = MakeNumberLocale(0);
+        stopwatchSecond.innerHTML = MakeNumberLocale(0);
+        var stopwatchStartStop = document.querySelector('#stopwatch #stopwatchStartStop');
+        stopwatchStartStop.setAttribute("data-state","stopped");
+    }
+    function TimerReset() {
+        var timerHour = document.querySelector('#timer #hour');
+        var timerMinute = document.querySelector('#timer #minute');
+        var timerSecond = document.querySelector('#timer #second');
+        timerHour.innerHTML = MakeNumberLocale(0);
+        timerMinute.innerHTML = MakeNumberLocale(0);
+        timerSecond.innerHTML = MakeNumberLocale(0);
+        var timerHourInput = document.querySelector('#timer #hourInput');
+        var timerMinuteInput = document.querySelector('#timer  #minuteInput');
+        var timerSecondInput = document.querySelector('#timer #secondInput');
+        timerHourInput.value = 0;
+        timerMinuteInput.value = 0;
+        timerSecondInput.value = 0;
+        var timerStartStop = document.querySelector('#timer #timerStartStop');
+        timerStartStop.setAttribute("data-state","reset");
+    }
+    function MakeNumberLocale(number) {
+        var localeNumber = number.toLocaleString('en-US', {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        });
+        return localeNumber;
+    }
+    document.getElementById("stopwatchStartStop").addEventListener("click", function() {
+        var timer = StopWatchStartStop(this.getAttribute("data-state"));
+    });
+    document.getElementById("timerStartStop").addEventListener("click", function(){
+        var timer = TimerStartStop(this.getAttribute("data-state"));
+    });
+    window.onload = function() {
+        RunClock();
+    };
+</script>
+</body>
+</html>
